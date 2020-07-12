@@ -9,6 +9,19 @@ mod path;
 
 use path::ConfigurablePath;
 
+fn default_paths() -> Vec<ConfigurablePath<'static>> {
+    vec![
+        ConfigurablePath::with_env("bin", "GOROOT", "/usr/local/go"),
+        ConfigurablePath::new("/snap"),
+        ConfigurablePath::new_become("/usr/local/sbin"),
+        ConfigurablePath::new("/usr/local/bin"),
+        ConfigurablePath::new_become("/usr/sbin"),
+        ConfigurablePath::new("/usr/bin"),
+        ConfigurablePath::new_become("/sbin"),
+        ConfigurablePath::new("/bin")
+    ]
+}
+
 struct Config {
     pub dedup: bool,
     pub mode: Mode,
