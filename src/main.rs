@@ -5,6 +5,10 @@ use clap::{App, ArgMatches};
 
 use std::collections::HashSet;
 
+mod path;
+
+use path::ConfigurablePath;
+
 struct Config {
     pub dedup: bool,
     pub mode: Mode,
