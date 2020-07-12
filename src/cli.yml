@@ -15,3 +15,7 @@ args:
       short: l
       long: lines
       help: Outputs line by line instead of the default colon seperated list
+  - from_env:
+      short: e
+      long: from-env
+      help: Includes path's from $PATH in environment
