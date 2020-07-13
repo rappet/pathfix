@@ -36,7 +36,7 @@ impl ConfigurablePath<'_> {
     }
 
     // TODO check for sudo
-    pub fn StdPathBuf(&self) -> Option<PathBuf> {
+    pub fn to_std_pathbuf(&self) -> Option<PathBuf> {
         let mut os_path = PathBuf::from(self.path);
         let base = self.base_env
             .and_then(std::env::var_os)
@@ -45,6 +45,22 @@ impl ConfigurablePath<'_> {
             os_path = Path::new(&base).join(os_path);
         }
         Some(os_path)
+    }
+
+    pub fn to_std_pathbuf_checked(&self) -> Option<PathBuf> {
+        if let Some(path) = self.to_std_pathbuf() {
+            if let Ok(metadata) = path.metadata() {
+                if metadata.is_dir() {
+                    Some(path)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 }
 

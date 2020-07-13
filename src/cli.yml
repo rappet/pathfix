@@ -19,3 +19,7 @@ args:
       short: e
       long: from-env
       help: Includes path's from $PATH in environment
+  - with_searches:
+      short: s
+      long: with-searched
+      help: Searches valid path's using inbuild rules
