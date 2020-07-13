@@ -1,0 +1,38 @@
+---
+# This is the base config (if this would be read from a file,
+# configs in higher directories will be ignored
+# You should use this if you create a custom config in ~/.pathfix.yml
+base: true
+
+# Append paths like /sbin, /usr/sbin only if the user is in one of those groups
+# or he is root
+include_administrative:
+  groups:
+    - wheel
+    - sudo
+
+# Paths to check if they are present and to add
+paths:
+  - ~/.cargo/bin
+  - $GOPATH/bin
+  - $GOROOT/bin
+  - ~/.local/bin
+  - ~/bin
+  - /snap
+  - path: /usr/local/sbin
+    admin: true
+  - /usr/local/bin
+  - path: /usr/sbin
+    admin: true
+  - /usr/bin
+  - path: /sbin
+    admin: true
+  - /bin
+  - /usr/local/games
+  - /use/games
+
+# Environment variables which will be used to substitute in paths.
+# Variables will be overwritten from configs in subdirectories and
+# in the end with real environment variables, if they exist.
+default_env:
+  GOROOT: /usr/local/go
