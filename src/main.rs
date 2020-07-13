@@ -8,7 +8,6 @@ use std::collections::HashSet;
 mod path;
 
 use path::ConfigurablePath;
-use std::path::PathBuf;
 
 fn default_paths() -> Vec<ConfigurablePath<'static>> {
     vec![
