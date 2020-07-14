@@ -29,7 +29,7 @@ paths:
     admin: true
   - /bin
   - /usr/local/games
-  - /use/games
+  - /usr/games
 
 # Environment variables which will be used to substitute in paths.
 # Variables will be overwritten from configs in subdirectories and
