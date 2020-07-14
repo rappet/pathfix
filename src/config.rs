@@ -65,6 +65,19 @@ impl Config {
             .collect();
         Ok(self)
     }
+
+    /// Merges two `Config` structures.
+    /// Changes in the `other` Config will overwrite
+    /// vaules in `self`.
+    pub fn merge(self, other: Config) -> Config {
+        Config {
+            base: self.base || other.base,
+            include_administrative: other.include_administrative
+                .or(self.include_administrative),
+            paths: other.paths.into_iter().chain(self.paths).collect(),
+            env: self.env.into_iter().chain(other.env).collect()
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
@@ -144,7 +157,7 @@ where S: ToString {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::Config;
+    use crate::config::{Config, IncludeAdministrative};
 
     #[test]
     fn test_new() {
@@ -168,6 +181,29 @@ mod tests {
             "/foo/bar".into(),
             "/fnorti/fnuff".into()
         ]);
+    }
+
+    #[test]
+    fn test_merge() {
+        let config1 = Config {
+            base: true,
+            include_administrative: Some(IncludeAdministrative::Always),
+            paths: vec!["/foo/bar".into(), "/bar/bazz".into()],
+            env: vec![("FOO".to_string(), "BAR".to_string())].into_iter().collect()
+        };
+        let config2 = Config {
+            base: true,
+            include_administrative: Some(IncludeAdministrative::RootOnly),
+            paths: vec!["/fnort".into()],
+            env: vec![("FOO".to_string(), "FNAFF".to_string())].into_iter().collect()
+        };
+        let result = Config {
+            base: true,
+            include_administrative: Some(IncludeAdministrative::RootOnly),
+            paths: vec!["/fnort".into(), "/foo/bar".into(), "/bar/bazz".into()],
+            env: vec![("FOO".to_string(), "FNAFF".to_string())].into_iter().collect()
+        };
+        assert_eq!(config1.merge(config2), result);
     }
 
     #[test]
