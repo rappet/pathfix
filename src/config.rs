@@ -14,6 +14,19 @@ pub struct Config {
 }
 
 impl Config {
+    /// Creates a new Config
+    ///
+    /// This should yield the same as Default::default()
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// assert_eq!(Config::new(), Default::default());
+    /// ```
+    pub fn new() -> Config {
+        Default::default()
+    }
+
     pub fn included() -> Config {
         serde_yaml::from_str(include_str!("config.yml")).unwrap()
     }
@@ -97,6 +110,11 @@ where S: ToString {
 #[cfg(test)]
 mod tests {
     use crate::config::Config;
+
+    #[test]
+    fn test_new() {
+        assert_eq!(Config::new(), Default::default());
+    }
 
     #[test]
     fn test_included() {
