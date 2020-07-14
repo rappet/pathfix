@@ -50,6 +50,21 @@ impl Config {
         self.env = std::env::vars().collect();
         self
     }
+
+    /// Reads PATH environment variable file and adds content to config.
+    ///
+    /// The PATH environment variable will be split on ':' and
+    /// replace all paths in the configuration.
+    ///
+    /// If the variables should be added and not replaces,
+    /// combine with `Config::merge`
+    pub fn with_path_from_env(mut self) -> Result<Config, &'static str> {
+        self.paths = std::env::var("PATH").map_err(|_| "$PATH does not contain valid utf8")?
+            .split(":")
+            .map(SyntaxSuggarPath::from)
+            .collect();
+        Ok(self)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
@@ -142,6 +157,17 @@ mod tests {
         env::set_var("FOO", "BAR");
         let config = Config::new().with_env();
         assert_eq!(config.env["FOO"], "BAR");
+    }
+
+    #[test]
+    fn test_with_path_from_env() {
+        use std::env;
+        env::set_var("PATH", "/foo/bar:/fnorti/fnuff");
+        let config = Config::new().with_path_from_env().unwrap();
+        assert_eq!(config.paths, vec![
+            "/foo/bar".into(),
+            "/fnorti/fnuff".into()
+        ]);
     }
 
     #[test]
