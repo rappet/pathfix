@@ -10,7 +10,7 @@ pub struct Config {
     #[serde(default)]
     pub paths: Vec<SyntaxSuggarPath>,
     #[serde(default)]
-    pub default_env: HashMap<String, String>,
+    pub env: HashMap<String, String>,
 }
 
 impl Config {

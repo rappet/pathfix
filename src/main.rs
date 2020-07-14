@@ -31,7 +31,7 @@ fn run(cli: &CliConfig) -> Result<(), &'static str> {
 
     path = config.paths.iter()
         .map(|p| Path::from(p.clone()))
-        .filter_map(|p| p.resolve(&config.default_env))
+        .filter_map(|p| p.resolve(&config.env))
         .collect();
 
     if cli.dedup {
