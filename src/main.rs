@@ -16,20 +16,24 @@ use std::borrow::Borrow;
 use crate::config::Path;
 
 fn run(cli: &CliConfig) -> Result<(), &'static str> {
-    let path_str = std::env::var("PATH").or(Err("Could not geth $PATH environment variable"))?;
-    let mut path: Vec<String> = if cli.from_env {
-        path_str.split(':').map(String::from).collect()
+    let mut env_config = Config::new().with_env();
+
+    // Use paths from environment if -e is set
+    if cli.from_env {
+        env_config = env_config.with_path_from_env()?;
+    }
+
+    // Use included paths if -s is set
+    let included_config = if cli.with_searches {
+        Config::included()
     } else {
-        Vec::new()
+        Config::new()
     };
 
-    // TODO scan for config
+    // Merge included config and config from path
+    let config = env_config.merge(included_config);
 
-    let config = Config::included();
-
-    // TODO add config from env
-
-    path = config.paths.iter()
+    let mut path: Vec<String> = config.paths.iter()
         .map(|p| Path::from(p.clone()))
         .filter_map(|p| p.resolve(&config.env))
         .collect();
