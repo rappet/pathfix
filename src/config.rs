@@ -30,6 +30,26 @@ impl Config {
     pub fn included() -> Config {
         serde_yaml::from_str(include_str!("config.yml")).unwrap()
     }
+
+    /// Sets the env parameter with the system environment.
+    ///
+    /// All existing variables in the config will be overwritten.
+    /// Use `Config::merge` if you want to add them to existing
+    /// environment variables in a `Config`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::env;
+    ///
+    /// env::set_var("FOO", "BAR");
+    /// let config = Config::new().with_env();
+    /// assert_eq!(config.env["FOO"], "BAR");
+    /// ```
+    pub fn with_env(mut self) -> Config {
+        self.env = std::env::vars().collect();
+        self
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
@@ -114,6 +134,14 @@ mod tests {
     #[test]
     fn test_new() {
         assert_eq!(Config::new(), Default::default());
+    }
+
+    #[test]
+    fn test_with_env() {
+        use std::env;
+        env::set_var("FOO", "BAR");
+        let config = Config::new().with_env();
+        assert_eq!(config.env["FOO"], "BAR");
     }
 
     #[test]
