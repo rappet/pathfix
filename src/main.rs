@@ -13,14 +13,14 @@ mod config;
 use cli::{CliConfig, Mode};
 use config::Config;
 use std::borrow::Borrow;
-use crate::config::Path;
+use crate::config::{Path, Paths};
 
 fn run(cli: &CliConfig) -> Result<(), &'static str> {
     let mut env_config = Config::new().with_env();
 
     // Use paths from environment if -e is set
     if cli.from_env {
-        env_config = env_config.with_path_from_env()?;
+        env_config.paths = Paths::from_env().map_err(|_| "$PATH does not contain valid utf8")?;
     }
 
     // Use included paths if -s is set
