@@ -34,5 +34,5 @@ paths:
 # Environment variables which will be used to substitute in paths.
 # Variables will be overwritten from configs in subdirectories and
 # in the end with real environment variables, if they exist.
-default_env:
+env:
   GOROOT: /usr/local/go
