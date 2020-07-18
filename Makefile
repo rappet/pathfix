@@ -1,6 +1,6 @@
 CARGO=cargo
 
-.PHONY: all test build doc
+.PHONY: all test build doc package
 
 all: test build doc
 
@@ -12,3 +12,6 @@ build:
 
 doc:
 	$(CARGO) doc
+
+package: test
+	$(CARGO) deb
