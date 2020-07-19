@@ -22,7 +22,7 @@ fn run(cli: &CliConfig) -> Result<(), &'static str> {
     }
 
     // Use included paths if -s is set
-    let included_config = if cli.with_searches {
+    let included_config = if cli.included {
         Config::included()
     } else {
         Config::new()

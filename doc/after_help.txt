@@ -1,0 +1,11 @@
+Usually it is enough to add
+
+    export PATH=$(/usr/bin/pathfix -D)
+
+to your .bashrc/.zshrc or similiar rc files to create a working $PATH variable.
+This configuration will include every path, that was already your $PATH variable before
+and will also scan for other possible paths and add them if they are available.
+In most cases you can remove manual $PATH additions from those rc files.
+
+To add other paths, you can add them in the ~/.pathfix.yml configuration file (see pathfix(5))
+or create a pull request to add it to the default config.
