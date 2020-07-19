@@ -37,6 +37,8 @@ impl Config {
     /// # Examples
     ///
     /// ```
+    /// use pathfix::config::Config;
+    ///
     /// assert_eq!(Config::new(), Default::default());
     /// ```
     pub fn new() -> Config {
@@ -52,7 +54,9 @@ impl Config {
     /// # Examples
     ///
     /// ```
-    /// let config = Config::from_file("config.toml").unwrap();
+    /// use pathfix::config::Config;
+    ///
+    /// let config = Config::from_file("src/config.toml").unwrap();
     /// println!("{:?}", config);
     /// ```
     pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> IoResult<Config> {
@@ -73,6 +77,7 @@ impl Config {
     ///
     /// ```
     /// use std::env;
+    /// use pathfix::config::Config;
     ///
     /// env::set_var("FOO", "BAR");
     /// let config = Config::new().with_env();
