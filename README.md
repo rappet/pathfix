@@ -1,7 +1,7 @@
 # PathFIX
 Fixes the PATH variable mess.
 
-Patfix will
+Pathfix will
 
 - remove duplicate entries in $PATH
 - automatically find other entries for $PATH
