@@ -3,8 +3,6 @@ extern crate clap;
 extern crate serde;
 extern crate serde_yaml;
 
-use clap::App;
-
 use std::collections::HashSet;
 
 mod cli;
@@ -68,8 +66,8 @@ fn run(cli: &CliConfig) -> Result<(), &'static str> {
 }
 
 fn main() {
-    let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = cli::matches();
+
     let config: CliConfig = matches.borrow().into();
 
     std::process::exit(match run(&config) {
