@@ -3,7 +3,7 @@ VERSION := $(shell git describe --tags)
 all: pathfix.1.gz #pathfix.yml.5.gz
 
 pathfix.1.gz: pathfix.1
-	gzip -k --best pathfix.1
+	gzip -kf --best pathfix.1
 
 pathfix.1: pathfix.1.md
 	pandoc $< -s -t man -o $@
