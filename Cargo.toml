@@ -17,3 +17,20 @@ serde_yaml = "0.8"
 
 [profile.release]
 lto = true
+
+[package.metadata.deb]
+extended-description = """\
+Fixes the PATH variable mess.\
+\
+Pathfix will\
+\
+- remove duplicate entries in $PATH\
+- automatically find other entries for $PATH"""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+    ["target/release/pathfix", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/pathfix/README", "644"],
+    ["doc/pathfix.1", "/usr/share/man/man1/pathfix.1.gz", "644"],
+]
