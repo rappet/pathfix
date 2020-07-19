@@ -63,11 +63,11 @@ Options
 FILES
 =====
 
-*~/.pathfix.yml*
+*~/.pathfix.toml*
 
 : Per-user configuration file
 
-*/etc/pathfix.yml*
+*/etc/pathfix.toml*
 
 : Global configuration file
 
@@ -91,4 +91,4 @@ Raphael Peters <raphael.r.peters@gmail.com>
 SEE ALSO
 ========
 
-**pathfix.yml(5)**
+**pathfix.toml(5)**

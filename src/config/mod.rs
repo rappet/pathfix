@@ -1,16 +1,27 @@
 use serde::{Serialize, Deserialize};
 
-use std::collections::HashMap;
-
 mod path;
+
 pub use path::{Path, SyntaxSuggarPath, Paths};
 mod include_administrative;
 pub use include_administrative::IncludeAdministrative;
 
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::Read;
+use std::fmt::Display;
+use std::error::Error;
+use serde::export::Formatter;
+use core::fmt;
+
+use std::io::Result as IoResult;
+
 #[derive(Default, Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Config {
     // Do not read in higher directories
+    #[serde(default)]
     pub base: bool,
+    #[serde(default)]
     pub include_administrative: Option<IncludeAdministrative>,
     #[serde(default)]
     pub paths: Paths,
@@ -33,7 +44,23 @@ impl Config {
     }
 
     pub fn included() -> Config {
-        serde_yaml::from_str(include_str!("../config.yml")).unwrap()
+        toml::from_str(include_str!("../config.toml")).unwrap()
+    }
+
+    /// Read the config from a specific file.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let config = Config::from_file("config.toml").unwrap();
+    /// println!("{:?}", config);
+    /// ```
+    pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> IoResult<Config> {
+        let mut file = File::open(path)?;
+        let mut contents = Vec::new();
+        file.read_to_end(&mut contents)?;
+
+        Ok(toml::from_slice(&contents)?)
     }
 
     /// Sets the env parameter with the system environment.
@@ -69,6 +96,19 @@ impl Config {
         }
     }
 }
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum ConfigError {
+
+}
+
+impl Display for ConfigError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "ConfigError")
+    }
+}
+
+impl Error for ConfigError {}
 
 #[cfg(test)]
 mod tests {
