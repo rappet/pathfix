@@ -9,10 +9,6 @@ pub use include_administrative::IncludeAdministrative;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
-use std::fmt::Display;
-use std::error::Error;
-use serde::export::Formatter;
-use core::fmt;
 
 use std::io::Result as IoResult;
 
@@ -101,19 +97,6 @@ impl Config {
         }
     }
 }
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum ConfigError {
-
-}
-
-impl Display for ConfigError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "ConfigError")
-    }
-}
-
-impl Error for ConfigError {}
 
 #[cfg(test)]
 mod tests {
