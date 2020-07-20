@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rappet/pathfix.svg?branch=master)](https://travis-ci.org/rappet/pathfix)
+
 # PathFIX
 Fixes the PATH variable mess.
 
