@@ -9,10 +9,10 @@ pub struct CliConfig {
 
 pub fn matches() -> ArgMatches<'static> {
     // include Cargo.toml so a rebuild is triggered if metadata is changed
-    include_str!("../Cargo.toml");
+    include_str!("../../../Cargo.toml");
 
     clap::app_from_crate!()
-        .after_help(include_str!("../doc/after_help.txt"))
+        .after_help(include_str!("after_help.txt"))
         .args_from_usage(
             "-d, --dedup 'Deduplicates the path'
                     -l, --lines 'Outputs line by line instead of the default colon seperated list'

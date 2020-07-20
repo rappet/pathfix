@@ -8,6 +8,14 @@ readme = "README.md"
 license = "GPL-3.0"
 repository = "https://github.com/rappet/pathfix"
 
+[lib]
+name = "pathfix"
+path = "src/lib.rs"
+
+[[bin]]
+name = "pathfix"
+path = "src/bin/pathfix/main.rs"
+
 [features]
 logging = ["env_logger"]
 
@@ -20,6 +28,7 @@ env_logger = { version = "0.7.1", optional = true }
 
 [profile.release]
 lto = true
+panic = "abort"
 
 [package.metadata.deb]
 extended-description = """\

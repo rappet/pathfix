@@ -8,16 +8,15 @@ extern crate log;
 #[cfg(feature = "logging")]
 extern crate env_logger;
 
-use std::collections::HashSet;
-
 mod cli;
-mod config;
-
 use cli::{CliConfig, Mode};
-use config::Config;
-use std::borrow::Borrow;
-use crate::config::{Path, Paths};
+
+use std::collections::HashSet;
 use std::io;
+
+use std::borrow::Borrow;
+use pathfix::config::Config;
+use pathfix::config::{Path, Paths};
 
 fn run(cli: &CliConfig) -> Result<(), String> {
     let mut env_config = Config::new().with_env();
