@@ -93,8 +93,8 @@ fn run(cli: &CliConfig) -> Result<(), io::Error> {
         path = new_path;
     }
 
-    eprintln!("{:?}", config.include_administrative.clone().unwrap_or(IncludeAdministrative::default()));
-    eprintln!("{:?}", config.include_administrative.clone().unwrap_or(IncludeAdministrative::default()).check_current_user());
+    debug!("IncludeAdministrative: {:?}", config.include_administrative.clone().unwrap_or(IncludeAdministrative::default()));
+    debug!("Use admin paths: {:?}", config.include_administrative.clone().unwrap_or(IncludeAdministrative::default()).check_current_user());
 
     // print output to stdout
     match cli.mode {
