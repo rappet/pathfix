@@ -121,6 +121,39 @@ impl<T> From<Vec<T>> for Paths
 #[cfg(test)]
 mod tests {
     use crate::config::path::Paths;
+    use std::collections::HashMap;
+    use std::string::ToString;
+    use crate::config::Path;
+
+    #[test]
+    fn test_resolve() {
+        let env: HashMap<String, String> = [("HOME", "/home/user"), ("FOO", "/foobar")]
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.to_string()))
+            .collect();
+        let testvec = [
+            (
+                Path::from("/fnort/bar"),
+                Some("/fnort/bar".to_string())
+            ),
+            (
+                Path::from("$HOME/foo"),
+                Some("/home/user/foo".to_string())
+            ),
+            (
+                Path::from("~/foo"),
+                Some("/home/user/foo".to_string())
+            ),
+            (
+                Path::from("$UNKOWN/foo"),
+                None
+            ),
+        ];
+
+        for (path, wanted) in &testvec {
+            assert_eq!(path.resolve(&env), *wanted);
+        }
+    }
 
     #[test]
     fn test_from_env() {

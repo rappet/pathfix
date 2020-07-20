@@ -108,6 +108,13 @@ mod tests {
     }
 
     #[test]
+    fn test_from_file() {
+        let config = Config::from_file("src/config.toml");
+        let wanted = Config::included();
+        assert_eq!(config.unwrap(), wanted);
+    }
+
+    #[test]
     fn test_with_env() {
         use std::env;
         env::set_var("FOO", "BAR");

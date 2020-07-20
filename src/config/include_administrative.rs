@@ -19,3 +19,20 @@ impl Default for IncludeAdministrative {
         ])
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::config::IncludeAdministrative;
+
+    #[test]
+    fn test_default() {
+        let default = IncludeAdministrative::default().clone();
+        assert_eq!(
+            default,
+            IncludeAdministrative::Groups(vec![
+                "wheel".to_string(),
+                "sudo".to_string(),
+            ])
+        )
+    }
+}
