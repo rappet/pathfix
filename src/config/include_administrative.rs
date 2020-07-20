@@ -9,6 +9,7 @@ use users::Group;
 pub enum IncludeAdministrative {
     Always,
     RootOnly,
+    Users(Vec<String>),
     Groups(Vec<String>),
     Never,
 }
@@ -25,12 +26,22 @@ impl IncludeAdministrative {
     ///
     /// assert_eq!(IncludeAdministrative::Always.check_current_user().unwrap(), true);
     /// assert_eq!(IncludeAdministrative::Never.check_current_user().unwrap(), false);
+    /// assert_eq!(
+    ///     IncludeAdministrative::Users(vec!["thisuserdoesnotexist".to_string()]).check_current_user().unwrap(),
+    ///     false
+    /// );
     /// assert_eq!(IncludeAdministrative::RootOnly.check_current_user().unwrap(), users::get_current_uid() == 0);
     /// ```
     pub fn check_current_user(&self) -> io::Result<bool> {
         Ok(match self {
             IncludeAdministrative::Always => true,
             IncludeAdministrative::RootOnly => users::get_current_uid() == 0,
+            IncludeAdministrative::Users(users) => users.contains(
+                &users::get_current_username()
+                    .ok_or(io::Error::new(io::ErrorKind::NotFound, "could not get current user name"))?
+                    .into_string()
+                    .ok().ok_or(io::Error::new(io::ErrorKind::InvalidData, "usernam is not valid utf8"))?
+            ),
             // TODO add test for Group check
             IncludeAdministrative::Groups(groups) => {
                 for group in users::group_access_list()?
