@@ -1,16 +1,13 @@
 use serde::{Serialize, Deserialize};
 
-mod path;
-
-pub use path::{Path, SyntaxSuggarPath, Paths};
-mod include_administrative;
-pub use include_administrative::IncludeAdministrative;
-
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::Read;
+use std::io::{self, Read};
 
-use std::io::Result as IoResult;
+mod include_administrative;
+pub use include_administrative::IncludeAdministrative;
+mod path;
+pub use path::{Path, SyntaxSuggarPath, Paths};
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Config {
@@ -55,7 +52,7 @@ impl Config {
     /// let config = Config::from_file("src/config.toml").unwrap();
     /// println!("{:?}", config);
     /// ```
-    pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> IoResult<Config> {
+    pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> io::Result<Config> {
         let mut file = File::open(path)?;
         let mut contents = Vec::new();
         file.read_to_end(&mut contents)?;
