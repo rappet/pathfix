@@ -9,14 +9,17 @@ jobs:
   fast_finish: true
 cache: cargo
 script:
+- cargo install cargo-deb
 - cargo build --verbose --all
 - cargo test --verbose --all
-- cargo build --verbose --all --release
+- cargo deb --verbose
 deploy:
   provider: releases
   api_key:
     secure: Qy2icXD4gDP7K0ZiGZ9eWp9T/YyQp+/4MJ2BSOJSjWOP0xWLEFI7hSkcRvt8VKpnYXT3Da/kArUK2gWFKPD0St6E1T8NTR/w9xuw1MG3O//k2/GA08Lh+fo7JRe7enY69bU0UxM7AY3hK89pAN99qds3jejNv770qwsbukhGQ9cqp4Ed8xGAFIQXBheJrXNohnVnT5vVmX8gaUpdcZVg/471rHJZA/v2+5csRxNjM9hStuWv65Ghk+zU2Vsx+gZv92Wn0cf+tzQ2I22mAVrgwBPHNc+C485KS4CcLsaOcLA4WegqmGMgO3XO6ocviTVT8bNGnmZSZ9Bhan4blYbUPmIG/cjZc0i55eh7ti7qWmdAWGE0zO5oCHdAr2eUOM0TBOs2XvQ9Op7Hq5OzO0jeiZmyl6ZdiDR0CletlP/SSl37tIEGPW6lfnOTL8MKHvD45sLp6STPJQl7E2THAPPzJZ53URhv+HMC5L6KdmLJkP3+KAPW03N7qUGM+PJsoYAT15sgQdYGKs8QAdFk/qp1epfTpSzl2jOrHpfBvQx4F6U4ekO/SwlTkSunxrvFH6gpzlKotvpBXU7ncwSAPfP9xSKY4KkFTACrxdUNfunzbvQlhTGX81PJCzAE8MTjGFlngmxet7ZVZ+cX6nOoXyb3DNEvt65ZgZ2oo03HfyFok0I=
-  file: target/release/pathfix
+  file:
+    - target/release/pathfix
+    - target/debian/*.deb
   skip_cleanup: 'true'
   on:
     tags: true
