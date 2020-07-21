@@ -20,6 +20,7 @@ deploy:
   file:
     - target/release/pathfix
     - target/debian/*.deb
+    - target/doc/*.gz
   skip_cleanup: 'true'
   on:
     tags: true
