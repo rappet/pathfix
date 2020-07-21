@@ -45,6 +45,6 @@ priority = "optional"
 assets = [
     ["target/release/pathfix", "usr/bin/", "755"],
     ["README.md", "usr/share/doc/pathfix/README", "644"],
-    ["doc/pathfix.1", "usr/share/man/man1/pathfix.1.gz", "644"],
+    ["doc/pathfix.1.gz", "usr/share/man/man1/pathfix.1.gz", "644"],
     ["src/config.toml", "etc/pathfix.toml", "644"]
 ]
