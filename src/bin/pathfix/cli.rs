@@ -20,7 +20,7 @@ pub fn matches() -> ArgMatches<'static> {
                     -i, --included 'Searches included path's using inbuild configuration'
             "
         )
-        .arg(Arg::from_usage("-D, --defaults 'Use recommended flags -des. Either -D, -e or -s must be set'")
+        .arg(Arg::from_usage("-D, --defaults 'Use recommended flags -des. Either -D, -e or -i must be set'")
             .long_help(
 "Use this flag to use the recommended settings for pathfix.
 Usually you don't need another configuration and adding
