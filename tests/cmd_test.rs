@@ -25,3 +25,17 @@ fn test_lines() {
         .success()
         .stdout("/usr/bin\n/usr/bin\n/bin\n");
 }
+
+/// This tests the fallback path string if an error occurs.
+/// Not giving any cli arguments is an error.
+#[test]
+fn test_no_args() {
+    let mut cmd = Command::cargo_bin("pathfix").unwrap();
+    let assert = cmd
+        .env("PATH", "/usr/bin:/usr/bin:/bin")
+        .assert();
+    assert
+        .failure()
+        .stdout("/usr/sbin:/usr/bin:/sbin:/bin\n");
+}
+

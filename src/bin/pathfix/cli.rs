@@ -1,4 +1,4 @@
-use clap::{ArgMatches, Arg, ArgGroup};
+use clap::{ArgMatches, Arg, ArgGroup, App};
 
 pub struct CliConfig {
     pub dedup: bool,
@@ -7,7 +7,7 @@ pub struct CliConfig {
     pub included: bool,
 }
 
-pub fn matches() -> ArgMatches<'static> {
+pub fn app() -> App<'static, 'static> {
     // include Cargo.toml so a rebuild is triggered if metadata is changed
     include_str!("../../../Cargo.toml");
 
@@ -29,7 +29,6 @@ Usually you don't need another configuration and adding
             .args(&["from-env", "included", "defaults"])
             .required(true)
             .multiple(true))
-        .get_matches()
 }
 
 impl From<&ArgMatches<'_>> for CliConfig {

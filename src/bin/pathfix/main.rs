@@ -18,7 +18,12 @@ use std::borrow::Borrow;
 use pathfix::config::{Config, IncludeAdministrative};
 use pathfix::config::{Path, Paths};
 
-fn run(cli: &CliConfig) -> Result<(), io::Error> {
+fn run() -> Result<(), io::Error> {
+    let matches = cli::app()
+        .get_matches_safe()
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+    let cli: CliConfig = matches.borrow().into();
+
     let mut env_config = Config::new().with_env();
 
     // Use paths from environment if -e is set
@@ -117,11 +122,7 @@ fn main() {
             env_logger::init();
         }
 
-    let matches = cli::matches();
-
-    let config: CliConfig = matches.borrow().into();
-
-    std::process::exit(match run(&config) {
+    std::process::exit(match run() {
         Ok(()) => 0,
         Err(err) => {
             eprintln!("pathfix: {}", err);
