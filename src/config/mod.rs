@@ -8,6 +8,8 @@ mod include_administrative;
 pub use include_administrative::IncludeAdministrative;
 mod path;
 pub use path::{Path, SyntaxSuggarPath, Paths};
+mod path_flags;
+pub use path_flags::{PathFlags, PathOs};
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Config {
