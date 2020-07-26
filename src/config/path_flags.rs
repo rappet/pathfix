@@ -4,6 +4,8 @@ use core::fmt;
 use std::str::FromStr;
 use std::io;
 use crate::config::IncludeAdministrative;
+use serde::{Serialize, Serializer, Deserialize, Deserializer, de};
+use serde::de::Visitor;
 
 
 /// Flags for a Path
@@ -91,7 +93,40 @@ impl Display for PathFlags {
     }
 }
 
+impl Serialize for PathFlags {
+    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error> where
+        S: Serializer {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+struct PathFlagsVisitor;
+
+impl<'de> Visitor<'de> for PathFlagsVisitor {
+    type Value = PathFlags;
+
+    fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
+        formatter.write_str("a list of path flags separated by a , as a string")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where
+        E: de::Error, {
+        PathFlags::from_str(v).map_err(|e| E::custom(
+            format!("error parsing path flags: {}", e.to_string())
+        ))
+    }
+}
+
+impl<'de> Deserialize<'de> for PathFlags {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where
+        D: Deserializer<'de> {
+        deserializer.deserialize_str(PathFlagsVisitor)
+    }
+}
+
 impl FromStr for PathFlags {
+    type Err = io::Error;
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut os_set = false;
         let mut flags = PathFlags::new();
@@ -123,8 +158,6 @@ impl FromStr for PathFlags {
         }
         Ok(flags)
     }
-
-    type Err = io::Error;
 }
 
 /// Operating system requirements
@@ -252,5 +285,33 @@ impl FromStr for PathOs {
                                format!("Unknown operating system '{}'", s),
                 ))
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde::{Serialize, Deserialize};
+
+    use std::str::FromStr;
+
+    use crate::config::PathFlags;
+
+    #[derive(Serialize, Deserialize)]
+    struct TestType {
+        pub flags: PathFlags
+    }
+
+    #[test]
+    fn test_serialize() {
+        let input = TestType { flags: PathFlags::from_str("osx, admin").unwrap() };
+        let wanted = "flags = 'admin,osx'\n";
+        assert_eq!(&toml::to_string_pretty(&input).unwrap(), wanted);
+    }
+
+    #[test]
+    fn test_deserialize() {
+        let input: TestType = toml::from_str("flags = \"osx, admin\"\n").unwrap();
+        let wanted: PathFlags = "admin,osx".parse().unwrap();
+        assert_eq!(input.flags, wanted);
     }
 }
