@@ -1,16 +1,42 @@
 use std::collections::HashMap;
-use std::ops::{Deref, DerefMut};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer, Deserializer};
 use std::env::VarError;
+use std::rc::Rc;
+use crate::config::PathFlags;
+use serde::ser::SerializeMap;
+use serde::de::{Visitor, MapAccess};
+use serde::export::Formatter;
+use core::fmt;
+use std::fmt::Display;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Path {
-    pub path: String,
-    pub admin: bool,
+    path: String,
+    flags: PathFlags,
+    #[serde(skip)]
+    source: Option<Rc<ConfigSource>>,
 }
 
 impl Path {
+    pub fn new<S>(path: S, flags: PathFlags) -> Path
+        where S: ToString {
+        Path {
+            path: path.to_string(),
+            flags,
+            source: None,
+        }
+    }
+
+    pub fn with_source<S, C> (path: S, flags: PathFlags, source: C) -> Path
+        where S: ToString, C: Into<Rc<ConfigSource>> {
+        Path {
+            path: path.to_string(),
+            flags,
+            source: Some(source.into()),
+        }
+    }
+
     pub fn resolve(&self, env: &HashMap<String, String>) -> Option<String> {
         let path: Option<Vec<String>> = self.path
             .split('/')
