@@ -213,11 +213,11 @@ impl PathOs {
 
     /// Checks if `self` is the specified operating system or belongs
     /// to the specified operating system group
-    pub fn is(self, other: PathOs) -> io::Result<bool> {
+    pub fn is(self, other: PathOs) -> PathOsResult<bool> {
         match (self, other) {
             (PathOs::Windows, PathOs::Windows) => Ok(true),
             (_, PathOs::Unix) => self.is_unix(),
-            (_, PathOs::Unknown) => Err(io::Error::new(io::ErrorKind::InvalidInput, "OS to check for is unknown")),
+            (_, PathOs::Unknown) => Err(PathOsError::CheckAgainstUnknownOs),
             (a, b) if a == b => Ok(true),
             (_, PathOs::Any) => Ok(true),
             (_, _) => Ok(false),
@@ -235,12 +235,12 @@ impl PathOs {
     /// assert_eq!(PathOs::Windows.is_unix().unwrap(), false);
     /// assert_eq!(PathOs::OSX.is_unix().unwrap(), true);
     /// ```
-    pub fn is_unix(self) -> io::Result<bool> {
+    pub fn is_unix(self) -> PathOsResult<bool> {
         match self {
             PathOs::Unix | PathOs::Linux | PathOs::OSX => Ok(true),
             PathOs::Windows => Ok(false),
-            PathOs::Any => Err(io::Error::new(io::ErrorKind::InvalidData, "PathOs is Any")),
-            PathOs::Unknown => Err(io::Error::new(io::ErrorKind::NotFound, "OS is not known")),
+            PathOs::Any => Err(PathOsError::CheckAnyOs),
+            PathOs::Unknown => Err(PathOsError::CheckUnknownOs),
         }
     }
 }
@@ -265,9 +265,9 @@ impl fmt::Display for PathOs {
 }
 
 impl FromStr for PathOs {
-    type Err = io::Error;
+    type Err = ParsePathOsError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> ParsePathOsResult {
         Ok(match s.to_ascii_lowercase().as_str() {
             "" | "any" => PathOs::Any,
             "unix" => PathOs::Unix,
@@ -282,11 +282,43 @@ impl FromStr for PathOs {
                 warn!("You should refer to MacOSX with 'osx' in your configuration, not with '{}'", s);
                 PathOs::OSX
             }
-            _ => return Err(
-                io::Error::new(io::ErrorKind::InvalidInput,
-                               format!("Unknown operating system '{}'", s),
-                ))
+            _ => return Err(ParsePathOsError { name: s.to_string() } )
         })
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum PathOsError {
+    CheckAnyOs,
+    CheckUnknownOs,
+    CheckAgainstUnknownOs,
+}
+
+pub type PathOsResult<T> = std::result::Result<T, PathOsError>;
+
+impl Display for PathOsError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            PathOsError::CheckAnyOs => f.write_str("Cannot check if 'Any' OS belongs to another OS group"),
+            PathOsError::CheckUnknownOs => f.write_str("Cannot check if 'Unknown' OS belongs to another OS group"),
+            PathOsError::CheckAgainstUnknownOs => f.write_str("Cannot check if OS against a unknown OS"),
+        }
+    }
+}
+
+impl std::error::Error for PathOsError {}
+
+#[derive(Debug)]
+pub struct ParsePathOsError {
+    name: String,
+}
+
+pub type ParsePathOsResult = std::result::Result<PathOs, ParsePathOsError>;
+
+impl Display for ParsePathOsError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "'{}' is not a known operating system", self.name)
     }
 }
 
