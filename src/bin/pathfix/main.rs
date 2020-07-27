@@ -39,7 +39,7 @@ fn run() -> Result<(), io::Error> {
     if cli.included {
         let load_config = |path: &str| {
             Config::from_file(path)
-                .map(|config| Some(config))
+                .map(Some)
                 .or_else(|err| match err.kind() {
                     io::ErrorKind::NotFound => Ok(None),
                     _ => Err(err)
@@ -107,8 +107,8 @@ fn run() -> Result<(), io::Error> {
         path = new_path;
     }
 
-    debug!("IncludeAdministrative: {:?}", config.include_administrative.clone().unwrap_or(IncludeAdministrative::default()));
-    debug!("Use admin paths: {:?}", config.include_administrative.clone().unwrap_or(IncludeAdministrative::default()).check_current_user());
+    debug!("IncludeAdministrative: {:?}", config.include_administrative.clone().unwrap_or_default());
+    debug!("Use admin paths: {:?}", config.include_administrative.clone().unwrap_or_default().check_current_user());
 
     // print output to stdout
     match cli.mode {

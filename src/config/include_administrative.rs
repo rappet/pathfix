@@ -38,9 +38,9 @@ impl IncludeAdministrative {
             IncludeAdministrative::RootOnly => users::get_current_uid() == 0,
             IncludeAdministrative::Users(users) => users.contains(
                 &users::get_current_username()
-                    .ok_or(io::Error::new(io::ErrorKind::NotFound, "could not get current user name"))?
+                    .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "could not get current user name"))?
                     .into_string()
-                    .ok().ok_or(io::Error::new(io::ErrorKind::InvalidData, "usernam is not valid utf8"))?
+                    .ok().ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "usernam is not valid utf8"))?
             ),
             // TODO add test for Group check
             IncludeAdministrative::Groups(groups) => {
