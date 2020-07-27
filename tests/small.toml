@@ -1,0 +1,38 @@
+# /etc/pathfix.toml - pathfix configuration - pathfix.toml(5)
+#
+# This is the base config. If base = true,
+# configs in higher directories will be ignored.
+# You should set this if you create a custom config in ~/.pathfix.toml
+# and overwrite the system config.
+# If base is false after the root path is read, /etc/pathfix.toml will also be included.
+# If base is still false after that, a config which is included in the
+# binary and managed py the packet maintainer/developer will be used.
+base = true
+
+# Append paths like /sbin, /usr/sbin only if the
+# user is in one of those groups or he is root
+include_administrative = { groups = [ "wheel", "sudo" ] }
+
+# Paths to check if they are present and to add
+[paths]
+"~/.cargo/bin" = ""
+"$GOPATH/bin" = ""
+"$GOROOT/bin" = ""
+"~/.local/bin" = ""
+"~/bin" = ""
+"/snap" = "linux"
+"/usr/local/sbin" = "unix,admin"
+"/usr/local/bin" = "unix"
+"/usr/sbin" = "unix,admin"
+"/usr/bin" = "unix"
+"/sbin" = "unix,admin"
+"/bin" = "unix"
+"/usr/local/games" = "unix"
+"/usr/games" = "unix"
+
+
+# Environment variables which will be used to substitute in paths.
+# Variables will be overwritten from configs in subdirectories and
+# in the end with real environment variables, if they exist.
+[env]
+GOROOT = "/usr/local/go"

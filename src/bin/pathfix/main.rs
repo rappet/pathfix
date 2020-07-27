@@ -10,13 +10,14 @@ extern crate env_logger;
 
 use log::Level::Debug;
 
-use std::io;
+use std::{io, fs};
 use std::borrow::Borrow;
 use std::collections::HashSet;
 
 use pathfix::config::{Config, IncludeAdministrative, Paths, PathFlags};
 
 mod cli;
+
 use cli::{CliConfig, Mode};
 
 fn run() -> Result<(), io::Error> {
@@ -106,6 +107,13 @@ fn run() -> Result<(), io::Error> {
             });
         path = new_path;
     }
+
+    // filter not existing paths
+    path = path.into_iter().filter(
+        |path| fs::metadata(path).map(
+            |path| path.is_dir())
+            .unwrap_or(false)
+    ).collect();
 
     debug!("IncludeAdministrative: {:?}", config.include_administrative.clone().unwrap_or_default());
     debug!("Use admin paths: {:?}", config.include_administrative.clone().unwrap_or_default().check_current_user());
