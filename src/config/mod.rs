@@ -108,6 +108,9 @@ impl Config {
         )?;
 
         let paths: io::Result<Vec<_>> = contents_str.lines()
+            .map(|line| line.splitn(2, '#').next().unwrap())
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
             .map(|line| Path::from_str(line))
             .collect();
 

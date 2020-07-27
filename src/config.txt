@@ -1,9 +1,11 @@
+# Add each path line by line
+
 ~/.cargo/bin
 $GOPATH/bin
 $GOROOT/bin
 ~/.local/bin
 ~/bin
-/snap                   |linux
+/snap                   |linux        # Flags can be added optionally
 /usr/local/sbin         |unix,admin
 /usr/local/bin          |unix
 /usr/sbin               |unix,admin
