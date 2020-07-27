@@ -72,8 +72,14 @@ fn run() -> Result<(), io::Error> {
 
             // Merge included config and config from path
             config = included_config.merge(config);
-            info!("Loaded included config")
-        };
+            info!("Loaded included config");
+        }
+    }
+
+    if let Some(config_file) = cli.config {
+        let load_config = Config::from_file(&config_file)?;
+        config = load_config.merge(config);
+        info!("Loaded specified config file {}", config_file);
     }
 
     debug!("Merged config:");

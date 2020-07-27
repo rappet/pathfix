@@ -39,3 +39,13 @@ fn test_no_args() {
         .stdout("/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n");
 }
 
+#[test]
+fn test_config() {
+    let mut cmd = Command::cargo_bin("pathfix").unwrap();
+    let assert = cmd
+        .arg("--config=./tests/small.toml")
+        .assert();
+    assert
+        .success()
+        .stdout("./tests/a:./tests/b/c\n");
+}
