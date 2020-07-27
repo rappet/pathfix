@@ -1,7 +1,7 @@
 [package]
 name = "pathfix"
 description = "Fixes the $PATH variable mess by generating it for you"
-version = "0.1.4-alpha.0"
+version = "0.1.4-alpha.1"
 authors = ["Raphael Peters <rappet@rappet.de>"]
 edition = "2018"
 readme = "README.md"
