@@ -7,9 +7,11 @@ use std::io::{self, Read};
 mod include_administrative;
 pub use include_administrative::IncludeAdministrative;
 mod path;
-pub use path::{Path, SyntaxSuggarPath, Paths};
+pub use path::{Path, Paths};
 mod path_flags;
 pub use path_flags::{PathFlags, PathOs};
+use crate::config::path::ConfigSource;
+use std::path::PathBuf;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Config {
@@ -41,7 +43,9 @@ impl Config {
     }
 
     pub fn included() -> Config {
-        toml::from_str(include_str!("../config.toml")).unwrap()
+        let mut config: Config = toml::from_str(include_str!("../config.toml")).unwrap();
+        config.paths.set_source(ConfigSource::Included);
+        config
     }
 
     /// Read the config from a specific file.
@@ -55,11 +59,14 @@ impl Config {
     /// println!("{:?}", config);
     /// ```
     pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> io::Result<Config> {
-        let mut file = File::open(path)?;
+        let path_ref = path.as_ref();
+        let mut file = File::open(&path_ref)?;
         let mut contents = Vec::new();
         file.read_to_end(&mut contents)?;
 
-        Ok(toml::from_slice(&contents)?)
+        let mut config: Config = toml::from_slice(&contents)?;
+        config.paths.set_source(ConfigSource::Config(PathBuf::from(path_ref)));
+        Ok(config)
     }
 
     /// Sets the env parameter with the system environment.
@@ -100,6 +107,7 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use crate::config::{Config, IncludeAdministrative, Paths};
+    use crate::config::path::ConfigSource;
 
     #[test]
     fn test_new() {
@@ -108,9 +116,10 @@ mod tests {
 
     #[test]
     fn test_from_file() {
-        let config = Config::from_file("src/config.toml");
+        let mut config = Config::from_file("src/config.toml").unwrap();
+        config.paths.set_source(ConfigSource::Included);
         let wanted = Config::included();
-        assert_eq!(config.unwrap(), wanted);
+        assert_eq!(config, wanted);
     }
 
     #[test]
@@ -132,7 +141,7 @@ mod tests {
         let config2 = Config {
             base: true,
             include_administrative: Some(IncludeAdministrative::RootOnly),
-            paths: Paths(vec!["/fnort".into()]),
+            paths: Paths::from(vec!["/fnort"]),
             env: vec![("FOO".to_string(), "FNAFF".to_string())].into_iter().collect(),
         };
         let result = Config {

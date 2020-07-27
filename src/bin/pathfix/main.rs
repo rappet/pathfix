@@ -8,15 +8,16 @@ extern crate log;
 #[cfg(feature = "logging")]
 extern crate env_logger;
 
+use log::Level::Debug;
+
+use std::io;
+use std::borrow::Borrow;
+use std::collections::HashSet;
+
+use pathfix::config::{Config, IncludeAdministrative, Paths, PathFlags};
+
 mod cli;
 use cli::{CliConfig, Mode};
-
-use std::collections::HashSet;
-use std::io;
-
-use std::borrow::Borrow;
-use pathfix::config::{Config, IncludeAdministrative};
-use pathfix::config::{Path, Paths};
 
 fn run() -> Result<(), io::Error> {
     let matches = cli::app()
@@ -74,15 +75,23 @@ fn run() -> Result<(), io::Error> {
         };
     }
 
-    let include_admin = config.include_administrative.as_ref()
-        .unwrap_or(&IncludeAdministrative::RootOnly)
-        .check_current_user()?;
+    debug!("Merged config:");
+    if log_enabled!(Debug) {
+        for path in config.paths.0.iter() {
+            if let Some(path_source) = path.source() {
+                debug!("{:30} | {:15} | {:30}", path.path(), path.flags().to_string(), path_source);
+            } else {
+                debug!("{:30} | {:15} |", path.path(), path.flags().to_string());
+            }
+        }
+    }
 
-    let mut path: Vec<String> = config.paths.iter()
-        .map(|p| Path::from(p.clone()))
-        .filter(|p| !p.admin || include_admin)
-        .filter_map(|p| p.resolve(&config.env))
-        .collect();
+    let include_administrative = config.include_administrative.as_ref()
+        .unwrap_or(&IncludeAdministrative::RootOnly);
+
+    let path_flags = PathFlags::this_system(include_administrative);
+
+    let mut path = config.paths.resolve(path_flags, &config.env);
 
     if cli.dedup {
         // removes duplicates while preserving order

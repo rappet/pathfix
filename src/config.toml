@@ -14,22 +14,22 @@ base = true
 include_administrative = { groups = [ "wheel", "sudo" ] }
 
 # Paths to check if they are present and to add
-paths = [
-    "~/.cargo/bin",
-    "$GOPATH/bin",
-    "$GOROOT/bin",
-    "~/.local/bin",
-    "~/bin",
-    "/snap",
-    { path = "/usr/local/sbin", admin = true },
-    "/usr/local/bin",
-    { path = "/usr/sbin", admin = true },
-    "/usr/bin",
-    { path = "/sbin", admin = true },
-    "/bin",
-    "/usr/local/games",
-    "/usr/games",
-]
+[paths]
+"~/.cargo/bin" = ""
+"$GOPATH/bin" = ""
+"$GOROOT/bin" = ""
+"~/.local/bin" = ""
+"~/bin" = ""
+"/snap" = "linux"
+"/usr/local/sbin" = "unix,admin"
+"/usr/local/bin" = "unix"
+"/usr/sbin" = "unix,admin"
+"/usr/bin" = "unix"
+"/sbin" = "unix,admin"
+"/bin" = "unix"
+"/usr/local/games" = "unix"
+"/usr/games" = "unix"
+
 
 # Environment variables which will be used to substitute in paths.
 # Variables will be overwritten from configs in subdirectories and

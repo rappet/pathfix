@@ -26,6 +26,20 @@ impl Path {
             .collect();
         path.map(|path| path.join("/"))
     }
+
+    /// Returns the contained path string
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+
+    pub fn flags(&self) -> PathFlags {
+        self.flags
+    }
+
+    /// Returns the source of where the path originates from
+    pub fn source(&self) -> Option<&Rc<ConfigSource>> {
+        self.source.as_ref()
+    }
 }
 
 impl<S> From<S> for Path
@@ -38,33 +52,31 @@ impl<S> From<S> for Path
     }
 }
 
-impl From<SyntaxSuggarPath> for Path {
-    fn from(path: SyntaxSuggarPath) -> Self {
-        match path {
-            SyntaxSuggarPath::Simple(s) => s.into(),
-            SyntaxSuggarPath::Struct(s) => s
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum ConfigSource {
+    PathVar,
+    Included,
+    Config(std::path::PathBuf),
+}
+
+impl Display for ConfigSource {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            ConfigSource::PathVar => write!(f, "PATH variable"),
+            ConfigSource::Included => write!(f, "included in binary"),
+            ConfigSource::Config(config) => write!(f, "config: {}", config.to_string_lossy()),
         }
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
-#[serde(untagged)]
-pub enum SyntaxSuggarPath {
-    Simple(String),
-    Struct(Path),
-}
-
-impl<S> From<S> for SyntaxSuggarPath
-    where S: ToString {
-    fn from(path: S) -> Self {
-        SyntaxSuggarPath::Struct(path.to_string().into())
-    }
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq)]
-pub struct Paths(pub Vec<SyntaxSuggarPath>);
+#[derive(Debug, Default, Clone, Eq, PartialEq)]
+pub struct Paths(pub Vec<Path>);
 
 impl Paths {
+    pub fn new(v: Vec<Path>) -> Paths {
+        Paths(v)
+    }
+
     /// Reads PATH environment variable file and adds content to config.
     ///
     /// The PATH environment variable will be split on ':'
@@ -78,9 +90,14 @@ impl Paths {
     ///
     /// The parameter will be split on ':'
     pub fn from_path(path: &str) -> Paths {
+        let config_source = Rc::new(ConfigSource::PathVar);
         Paths(
-            path.split(":")
-                .map(SyntaxSuggarPath::from)
+            path.split(':')
+                .map(Path::from)
+                .map(|mut path| {
+                    path.source = Some(config_source.clone());
+                    path
+                })
                 .collect()
         )
     }
@@ -88,21 +105,63 @@ impl Paths {
     /// Merges two `Paths` structures.
     /// Values `other` Config will be inserted before `self.
     pub fn merge(self, other: Paths) -> Paths {
-        Paths(other.iter().chain(self.iter()).map(ToOwned::to_owned).collect())
+        Paths(other.0.iter().chain(self.0.iter()).map(ToOwned::to_owned).collect())
+    }
+
+    pub fn resolve(&self, system_flags: PathFlags, env: &HashMap<String, String>) -> Vec<String> {
+        self.0.iter()
+            .cloned()
+            .filter(|p| p.flags.check(system_flags))
+            .filter_map(|p| p.resolve(env))
+            .collect()
+    }
+
+    /// Sets the source of all paths in the internal vector.
+    pub fn set_source(&mut self, source: ConfigSource) {
+        let rc = Rc::new(source);
+        for path in self.0.iter_mut() {
+            path.source = Some(rc.clone());
+        }
     }
 }
 
-impl Deref for Paths {
-    type Target = Vec<SyntaxSuggarPath>;
-
-    fn deref(&self) -> &Vec<SyntaxSuggarPath> {
-        &self.0
+impl Serialize for Paths {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
+        S: Serializer,
+    {
+        let mut serialize_map = serializer.serialize_map(Some(self.0.len()))?;
+        for path in &self.0 {
+            serialize_map.serialize_entry(&path.path, &path.flags)?;
+        }
+        serialize_map.end()
     }
 }
 
-impl DerefMut for Paths {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+struct PathsVisitor;
+
+impl<'de> Visitor<'de> for PathsVisitor {
+    type Value = Paths;
+
+    fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
+        formatter.write_str("an map that maps paths to their flags as strings")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Paths, A::Error> where
+        A: MapAccess<'de>, {
+        let mut paths = Vec::new();
+        while let Some((path, flags)) = map.next_entry()? {
+            paths.push(Path {
+                path, flags, ..Default::default()
+            })
+        }
+        Ok(Paths(paths))
+    }
+}
+
+impl<'de> Deserialize<'de> for Paths {
+    fn deserialize<D>(deserializer: D) -> Result<Paths, D::Error> where
+        D: Deserializer<'de> {
+        deserializer.deserialize_map(PathsVisitor)
     }
 }
 
@@ -112,7 +171,7 @@ impl<T> From<Vec<T>> for Paths
         Paths(
             v.iter()
                 .map(ToString::to_string)
-                .map(SyntaxSuggarPath::from)
+                .map(Path::from)
                 .collect()
         )
     }
@@ -120,10 +179,11 @@ impl<T> From<Vec<T>> for Paths
 
 #[cfg(test)]
 mod tests {
-    use crate::config::path::Paths;
     use std::collections::HashMap;
     use std::string::ToString;
-    use crate::config::Path;
+    use std::rc::Rc;
+
+    use crate::config::{Path, Paths, PathFlags, ConfigSource};
 
     #[test]
     fn test_resolve() {
@@ -160,22 +220,30 @@ mod tests {
         use std::env;
         env::set_var("PATH", "/foo/bar:/fnorti/fnuff");
         let paths = Paths::from_env().unwrap();
-        assert_eq!(paths.0, vec![
-            "/foo/bar".into(),
-            "/fnorti/fnuff".into()
-        ]);
+        assert_eq!(paths, Paths::new(vec![
+            Path::with_source("/foo/bar", PathFlags::default(), ConfigSource::PathVar),
+            Path::with_source("/fnorti/fnuff", PathFlags::default(), ConfigSource::PathVar),
+        ]));
     }
 
     #[test]
     fn test_from_path() {
+        let source = Rc::new(ConfigSource::PathVar);
         let test_vec: Vec<(&'static str, Paths)> = vec![
             (
                 "/foo/bar",
-                vec!["/foo/bar"].into()
+                Paths::new(vec![
+                    Path::with_source("/foo/bar", PathFlags::default(), ConfigSource::PathVar)
+                ])
             ),
             (
                 "/foo/bar:~/bin/bazz:$HOME/fnort/bar:${VAR}/some/path",
-                vec!["/foo/bar", "~/bin/bazz", "$HOME/fnort/bar", "${VAR}/some/path"].into()
+                Paths::new(vec![
+                    Path::with_source("/foo/bar", PathFlags::default(), source.clone()),
+                    Path::with_source("~/bin/bazz", PathFlags::default(), source.clone()),
+                    Path::with_source("$HOME/fnort/bar", PathFlags::default(), source.clone()),
+                    Path::with_source("${VAR}/some/path", PathFlags::default(), source.clone())
+                ])
             ),
         ];
 

@@ -6,6 +6,7 @@ use std::io;
 use crate::config::IncludeAdministrative;
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de};
 use serde::de::Visitor;
+use std::borrow::Borrow;
 
 
 /// Flags for a Path
@@ -21,7 +22,7 @@ use serde::de::Visitor;
 /// use pathfix::config::{PathFlags, IncludeAdministrative};
 ///
 /// let flags: PathFlags = "admin".parse().unwrap();
-/// assert!(flags.check(PathFlags::this_system(IncludeAdministrative::Always)));
+/// assert!(flags.check(PathFlags::this_system(&IncludeAdministrative::Always)));
 /// ```
 #[derive(Debug, Default, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct PathFlags {
@@ -50,7 +51,7 @@ impl PathFlags {
     /// use pathfix::config::{PathFlags, IncludeAdministrative};
     /// assert!(
     ///     PathFlags::new().check(
-    ///         PathFlags::this_system(IncludeAdministrative::Always)
+    ///         PathFlags::this_system(&IncludeAdministrative::Always)
     ///     )
     /// );
     /// ```
@@ -69,13 +70,14 @@ impl PathFlags {
     /// use pathfix::config::{PathFlags, IncludeAdministrative};
     ///
     /// let requirements: PathFlags = "linux".parse().unwrap();
-    /// let this_system = PathFlags::this_system(IncludeAdministrative::Always);
+    /// let this_system = PathFlags::this_system(&IncludeAdministrative::Always);
     ///
     /// assert_eq!(requirements.check(this_system), cfg!(target_os = "linux"));
     /// ```
-    pub fn this_system(include_administrative: IncludeAdministrative) -> PathFlags {
+    pub fn this_system<I>(include_administrative: &I) -> PathFlags
+        where I: Borrow<IncludeAdministrative> {
         PathFlags {
-            admin: include_administrative.check_current_user().unwrap_or(true),
+            admin: include_administrative.borrow().check_current_user().unwrap_or(true),
             os: PathOs::this_system(),
         }
     }
