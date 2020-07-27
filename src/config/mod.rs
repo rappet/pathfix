@@ -65,6 +65,15 @@ impl Config {
     /// println!("{:?}", config);
     /// ```
     pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> io::Result<Config> {
+        Config::from_file_inner(&path).map_err(
+            |err| io::Error::new(err.kind(), format!("{}: {}",
+                path.as_ref().to_string_lossy(),
+                err.to_string()
+            ))
+        )
+    }
+
+    fn from_file_inner<P: AsRef<std::path::Path>>(path: &P) -> io::Result<Config> {
         let path_ref = path.as_ref();
         let mut file = File::open(&path_ref)?;
         let mut contents = Vec::new();
