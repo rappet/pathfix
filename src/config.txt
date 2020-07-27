@@ -1,0 +1,14 @@
+~/.cargo/bin
+$GOPATH/bin
+$GOROOT/bin
+~/.local/bin
+~/bin
+/snap                   |linux
+/usr/local/sbin         |unix,admin
+/usr/local/bin          |unix
+/usr/sbin               |unix,admin
+/usr/bin                |unix
+/sbin                   |unix,admin
+/bin                    |unix
+/usr/local/games        |unix
+/usr/games              |unix

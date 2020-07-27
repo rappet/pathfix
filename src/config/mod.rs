@@ -7,13 +7,18 @@ use std::fs::File;
 use std::io::{self, Read};
 
 mod include_administrative;
+
 pub use include_administrative::IncludeAdministrative;
+
 mod path;
-pub use path::{Path, Paths};
+
+pub use path::{Path, Paths, ConfigSource};
+
 mod path_flags;
+
 pub use path_flags::{PathFlags, PathOs, PathOsError, PathOsResult, ParsePathOsError, ParsePathOsResult};
-use crate::config::path::ConfigSource;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 /// Main configuration file
 ///
@@ -67,8 +72,8 @@ impl Config {
     pub fn from_file<P: AsRef<std::path::Path>>(path: P) -> io::Result<Config> {
         Config::from_file_inner(&path).map_err(
             |err| io::Error::new(err.kind(), format!("{}: {}",
-                path.as_ref().to_string_lossy(),
-                err.to_string()
+                                                     path.as_ref().to_string_lossy(),
+                                                     err.to_string()
             ))
         )
     }
@@ -82,6 +87,34 @@ impl Config {
         let mut config: Config = toml::from_slice(&contents)?;
         config.paths.set_source(ConfigSource::Config(PathBuf::from(path_ref)));
         Ok(config)
+    }
+
+    /// Read the config from a simple txt file
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pathfix::config::Config;
+    ///
+    /// Config::from_txt("src/config.txt").unwrap();
+    /// ```
+    pub fn from_txt<P: AsRef<std::path::Path>>(path: P) -> io::Result<Config> {
+        let path_ref = path.as_ref();
+        let mut file = File::open(&path_ref)?;
+        let mut contents = Vec::new();
+        file.read_to_end(&mut contents)?;
+        let contents_str = String::from_utf8(contents).map_err(
+            |err| io::Error::new(io::ErrorKind::InvalidData, err.to_string())
+        )?;
+
+        let paths: io::Result<Vec<_>> = contents_str.lines()
+            .map(|line| Path::from_str(line))
+            .collect();
+
+        Ok(Config {
+            paths: Paths::new(paths?),
+            ..Default::default()
+        })
     }
 
     /// Sets the env parameter with the system environment.
@@ -114,7 +147,7 @@ impl Config {
             include_administrative: other.include_administrative
                 .or(self.include_administrative),
             paths: self.paths.merge(other.paths),
-            env: self.env.into_iter().chain(other.env).collect()
+            env: self.env.into_iter().chain(other.env).collect(),
         }
     }
 }
@@ -138,6 +171,14 @@ mod tests {
     }
 
     #[test]
+    fn test_from_txt() {
+        let from_toml = Config::from_file("src/config.toml").unwrap();
+        let from_txt = Config::from_txt("src/config.txt").unwrap();
+
+        assert_eq!(from_toml.paths.normalize(), from_txt.paths.normalize());
+    }
+
+    #[test]
     fn test_with_env() {
         use std::env;
         env::set_var("FOO", "BAR");
@@ -151,7 +192,7 @@ mod tests {
             base: true,
             include_administrative: Some(IncludeAdministrative::Always),
             paths: vec!["/foo/bar", "/bar/bazz"].into(),
-            env: vec![("FOO".to_string(), "BAR".to_string())].into_iter().collect()
+            env: vec![("FOO".to_string(), "BAR".to_string())].into_iter().collect(),
         };
         let config2 = Config {
             base: true,
@@ -163,7 +204,7 @@ mod tests {
             base: true,
             include_administrative: Some(IncludeAdministrative::RootOnly),
             paths: vec!["/fnort", "/foo/bar", "/bar/bazz"].into(),
-            env: vec![("FOO".to_string(), "FNAFF".to_string())].into_iter().collect()
+            env: vec![("FOO".to_string(), "FNAFF".to_string())].into_iter().collect(),
         };
         assert_eq!(config1.merge(config2), result);
     }

@@ -72,6 +72,25 @@ impl Path {
     pub fn source(&self) -> Option<&Rc<ConfigSource>> {
         self.source.as_ref()
     }
+
+    /// Removes the source from the path
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pathfix::config::{Path, PathFlags, ConfigSource};
+    /// let path = Path::with_source("/foo/bar", "unix".parse().unwrap(), ConfigSource::PathVar);
+    /// let wanted = Path::new("/foo/bar", "unix".parse().unwrap());
+    ///
+    /// assert_eq!(path.normalize(), wanted);
+    /// ```
+    pub fn normalize(self) -> Path {
+        Path {
+            path: self.path,
+            flags: self.flags,
+            source: None,
+        }
+    }
 }
 
 impl Display for Path {
@@ -91,9 +110,9 @@ impl FromStr for Path {
         let mut split = s.rsplitn(2, '|');
         let last = split.next().unwrap();
         Ok(if let Some(first) = split.next() {
-            Path::new(first, last.parse()?)
+            Path::new(first.trim(), last.parse()?)
         } else {
-            Path::new(last, PathFlags::default())
+            Path::new(last.trim(), PathFlags::default())
         })
     }
 }
@@ -183,6 +202,11 @@ impl Paths {
             path.source = Some(rc.clone());
         }
     }
+
+    /// Strips the `from` from all Paths
+    pub fn normalize(self) -> Paths {
+        Paths::new(self.0.into_iter().map(Path::normalize).collect())
+    }
 }
 
 impl Serialize for Paths {
@@ -251,7 +275,10 @@ mod tests {
         let cases = [
             ("/foo/bar", Path::new("/foo/bar", PathFlags::new())),
             ("/foo/bar|admin", Path::new("/foo/bar", "admin".parse().unwrap())),
-            ("/foo/bar|windows|admin", Path::new("/foo/bar|windows", "admin".parse().unwrap())),
+            (
+                "  /foo/bar|windows    |  admin  ",
+                Path::new("/foo/bar|windows", "admin".parse().unwrap())
+            ),
         ];
         for (s, wanted) in &cases {
             let path: Path = s.parse().unwrap();
