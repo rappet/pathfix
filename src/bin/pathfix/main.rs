@@ -127,7 +127,7 @@ fn main() {
         Err(err) => {
             eprintln!("pathfix: {}", err);
             eprintln!("pathfix: Failure. Returning included failsave PATH");
-            println!("/usr/sbin:/usr/bin:/sbin:/bin");
+            println!("/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
             1
         }
     });

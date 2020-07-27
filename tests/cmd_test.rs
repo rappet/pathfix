@@ -36,6 +36,6 @@ fn test_no_args() {
         .assert();
     assert
         .failure()
-        .stdout("/usr/sbin:/usr/bin:/sbin:/bin\n");
+        .stdout("/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n");
 }
 
