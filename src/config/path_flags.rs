@@ -287,6 +287,15 @@ impl FromStr for PathOs {
     }
 }
 
+/// Error type used by the `PathOs` type.
+///
+/// # Examples
+///
+/// ```
+/// use pathfix::config::{PathOs, PathOsError};
+///
+/// assert_eq!(PathOs::Any.is(PathOs::Unix), Err(PathOsError::CheckAnyOs));
+/// ```
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum PathOsError {
@@ -309,6 +318,7 @@ impl Display for PathOsError {
 
 impl std::error::Error for PathOsError {}
 
+/// Error type which describes which operating system is unknown
 #[derive(Debug)]
 pub struct ParsePathOsError {
     name: String,

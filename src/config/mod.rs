@@ -1,3 +1,5 @@
+//! Configuration file and Path business logic
+
 use serde::{Serialize, Deserialize};
 
 use std::collections::HashMap;
@@ -9,10 +11,14 @@ pub use include_administrative::IncludeAdministrative;
 mod path;
 pub use path::{Path, Paths};
 mod path_flags;
-pub use path_flags::{PathFlags, PathOs};
+pub use path_flags::{PathFlags, PathOs, PathOsError, PathOsResult, ParsePathOsError, ParsePathOsResult};
 use crate::config::path::ConfigSource;
 use std::path::PathBuf;
 
+/// Main configuration file
+///
+/// The main purpose of this config is to provide `Paths` which should be
+/// added to the _$PATH_ variable.
 #[derive(Default, Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Config {
     // Do not read in higher directories

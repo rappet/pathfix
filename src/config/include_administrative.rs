@@ -4,6 +4,7 @@ use std::string::ToString;
 use serde::{Deserialize, Serialize};
 use users::Group;
 
+/// Policy under which the user should be considered an administrator.
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum IncludeAdministrative {
