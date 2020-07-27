@@ -9,6 +9,8 @@ use serde::de::{Visitor, MapAccess};
 use serde::export::Formatter;
 use core::fmt;
 use std::fmt::Display;
+use std::str::FromStr;
+use std::io;
 
 /// I single entry in the to be generated _$PATH_ variable.
 ///
@@ -69,6 +71,30 @@ impl Path {
     /// Returns the source of where the path originates from
     pub fn source(&self) -> Option<&Rc<ConfigSource>> {
         self.source.as_ref()
+    }
+}
+
+impl Display for Path {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        if self.flags() != PathFlags::default() {
+            write!(f, "{}|{}", self.path(), self.flags())
+        } else {
+            write!(f, "{}", self.path())
+        }
+    }
+}
+
+impl FromStr for Path {
+    type Err = io::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut split = s.rsplitn(2, '|');
+        let last = split.next().unwrap();
+        Ok(if let Some(first) = split.next() {
+            Path::new(first, last.parse()?)
+        } else {
+            Path::new(last, PathFlags::default())
+        })
     }
 }
 
@@ -218,6 +244,28 @@ mod tests {
     use std::rc::Rc;
 
     use crate::config::{Path, Paths, PathFlags, ConfigSource};
+    use std::io;
+
+    #[test]
+    fn test_parse_path() {
+        let cases = [
+            ("/foo/bar", Path::new("/foo/bar", PathFlags::new())),
+            ("/foo/bar|admin", Path::new("/foo/bar", "admin".parse().unwrap())),
+            ("/foo/bar|windows|admin", Path::new("/foo/bar|windows", "admin".parse().unwrap())),
+        ];
+        for (s, wanted) in &cases {
+            let path: Path = s.parse().unwrap();
+            assert_eq!(&path, wanted);
+        }
+
+        let failures = [
+            "/foo/bar|adsfhahdsf",
+        ];
+        for s in &failures {
+            let path: Result<Path, io::Error> = s.parse();
+            assert!(path.is_err());
+        }
+    }
 
     #[test]
     fn test_resolve() {
