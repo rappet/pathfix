@@ -20,18 +20,19 @@ mod cli;
 
 use cli::{CliConfig, Mode};
 
-fn run() -> Result<(), io::Error> {
+mod error;
+use error::Result;
+
+fn run() -> Result<()> {
     let matches = cli::app()
-        .get_matches_safe()
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e.message))?;
+        .get_matches_safe()?;
     let cli: CliConfig = matches.borrow().into();
 
     let mut env_config = Config::new().with_env();
 
     // Use paths from environment if -e is set
     if cli.from_env {
-        env_config.paths = Paths::from_env()
-            .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "$PATH does not contain valid utf8"))?;
+        env_config.paths = Paths::from_env()?;
         info!("Loaded contents of $PATH variable");
     }
 
@@ -48,8 +49,7 @@ fn run() -> Result<(), io::Error> {
         };
 
         if let Some(home_config) = load_config(
-            &format!("{}/.pathfix.toml", std::env::var("HOME")
-                .map_err(|_err| io::Error::new(io::ErrorKind::InvalidData, "could not load $HOME var"))?)
+            &format!("{}/.pathfix.toml", std::env::var("HOME")?)
         )? {
             config = home_config.merge(config);
             info!("Loaded config from ~/.pathfix.toml");
