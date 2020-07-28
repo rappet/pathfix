@@ -12,13 +12,15 @@ pub use include_administrative::IncludeAdministrative;
 
 mod path;
 
-pub use path::{Path, Paths, ConfigSource};
+pub use path::{Path, Paths};
 
 mod path_flags;
 
 pub use path_flags::{PathFlags, PathOs, PathOsError, PathOsResult, ParsePathOsError, ParsePathOsResult};
-use std::path::PathBuf;
 use std::str::FromStr;
+
+mod config_source;
+pub use config_source::ConfigSource;
 
 /// Main configuration file
 ///
@@ -84,8 +86,7 @@ impl Config {
         let mut contents = Vec::new();
         file.read_to_end(&mut contents)?;
 
-        let mut config: Config = toml::from_slice(&contents)?;
-        config.paths.set_source(ConfigSource::Config(PathBuf::from(path_ref)));
+        let config: Config = toml::from_slice(&contents)?;
         Ok(config)
     }
 

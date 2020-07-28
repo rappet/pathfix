@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize, Serializer, Deserializer};
 use std::env::VarError;
 use std::rc::Rc;
-use crate::config::PathFlags;
 use serde::ser::SerializeMap;
 use serde::de::{Visitor, MapAccess};
 use serde::export::Formatter;
@@ -11,6 +10,8 @@ use core::fmt;
 use std::fmt::Display;
 use std::str::FromStr;
 use std::io;
+
+use crate::config::{ConfigSource, PathFlags};
 
 /// I single entry in the to be generated _$PATH_ variable.
 ///
@@ -123,23 +124,6 @@ impl<S> From<S> for Path
         Path {
             path: s.into(),
             ..Default::default()
-        }
-    }
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum ConfigSource {
-    PathVar,
-    Included,
-    Config(std::path::PathBuf),
-}
-
-impl Display for ConfigSource {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            ConfigSource::PathVar => write!(f, "PATH variable"),
-            ConfigSource::Included => write!(f, "included in binary"),
-            ConfigSource::Config(config) => write!(f, "config: {}", config.to_string_lossy()),
         }
     }
 }
