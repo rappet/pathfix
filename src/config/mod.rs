@@ -159,7 +159,7 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use crate::config::{Config, IncludeAdministrative, Paths};
-    use crate::config::path::ConfigSource;
+    use crate::config::ConfigSource;
 
     #[test]
     fn test_new() {
