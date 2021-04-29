@@ -20,6 +20,8 @@ include_administrative = { groups = [ "wheel", "sudo" ] }
 "$GOROOT/bin" = ""
 "~/.local/bin" = ""
 "~/bin" = ""
+"~/.sdkman/candidates/java/current/bin" = ""
+"~/.deno/bin" = ""
 "/snap" = "linux"
 "/usr/local/sbin" = "unix,admin"
 "/usr/local/bin" = "unix"
@@ -29,7 +31,13 @@ include_administrative = { groups = [ "wheel", "sudo" ] }
 "/bin" = "unix"
 "/usr/local/games" = "unix"
 "/usr/games" = "unix"
-
+"/opt/homebrew/bin" = "macos"
+"/opt/homebrew/sbin" = "macos"
+"/opt/local/bin" = "unix"
+"/opt/local/sbin" = "unix"
+"/Library/TeX/texbin" = "macos"
+"/usr/local/go/bin" = "unix"
+"/Library/Apple/usr/bin" = "macos"
 
 # Environment variables which will be used to substitute in paths.
 # Variables will be overwritten from configs in subdirectories and
