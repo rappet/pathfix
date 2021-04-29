@@ -1,5 +1,4 @@
 use std::fmt::Display;
-use serde::export::Formatter;
 use core::fmt;
 use std::str::FromStr;
 use std::io;
@@ -84,7 +83,7 @@ impl PathFlags {
 }
 
 impl Display for PathFlags {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let os = self.os.to_string();
         let mut parts = Vec::new();
         if self.admin {
@@ -107,7 +106,7 @@ struct PathFlagsVisitor;
 impl<'de> Visitor<'de> for PathFlagsVisitor {
     type Value = PathFlags;
 
-    fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("a list of path flags separated by a , as a string")
     }
 
@@ -307,7 +306,7 @@ pub enum PathOsError {
 pub type PathOsResult<T> = std::result::Result<T, PathOsError>;
 
 impl Display for PathOsError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             PathOsError::CheckAnyOs => f.write_str("Cannot check if 'Any' OS belongs to another OS group"),
             PathOsError::CheckUnknownOs => f.write_str("Cannot check if 'Unknown' OS belongs to another OS group"),
@@ -327,7 +326,7 @@ pub struct ParsePathOsError {
 pub type ParsePathOsResult = std::result::Result<PathOs, ParsePathOsError>;
 
 impl Display for ParsePathOsError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "'{}' is not a known operating system", self.name)
     }
 }

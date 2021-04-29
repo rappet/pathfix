@@ -1,5 +1,4 @@
 use std::fmt::{Display, Debug};
-use serde::export::Formatter;
 use core::fmt;
 use std::env::VarError;
 use std::io;
@@ -19,7 +18,7 @@ enum Repr {
 }
 
 impl Display for Error {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.repr {
             Repr::Clap(err) => write!(f, "clap: {}", err),
             Repr::Var(err) => Display::fmt(err, f),

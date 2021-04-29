@@ -5,7 +5,6 @@ use std::env::VarError;
 use std::rc::Rc;
 use serde::ser::SerializeMap;
 use serde::de::{Visitor, MapAccess};
-use serde::export::Formatter;
 use core::fmt;
 use std::fmt::Display;
 use std::str::FromStr;
@@ -95,7 +94,7 @@ impl Path {
 }
 
 impl Display for Path {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.flags() != PathFlags::default() {
             write!(f, "{}|{}", self.path(), self.flags())
         } else {
@@ -210,7 +209,7 @@ struct PathsVisitor;
 impl<'de> Visitor<'de> for PathsVisitor {
     type Value = Paths;
 
-    fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("an map that maps paths to their flags as strings")
     }
 
