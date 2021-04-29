@@ -6,6 +6,7 @@ use crate::config::IncludeAdministrative;
 use serde::{Serialize, Serializer, Deserialize, Deserializer, de};
 use serde::de::Visitor;
 use std::borrow::Borrow;
+use thiserror::Error;
 
 
 /// Flags for a Path
@@ -295,41 +296,27 @@ impl FromStr for PathOs {
 ///
 /// assert_eq!(PathOs::Any.is(PathOs::Unix), Err(PathOsError::CheckAnyOs));
 /// ```
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Error, Debug, Copy, Clone, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum PathOsError {
+    #[error("Cannot check if 'Any' OS belongs to another OS group.")]
     CheckAnyOs,
+    #[error("Cannot check if 'Unknown' OS belongs to another OS group.")]
     CheckUnknownOs,
+    #[error("Cannot check OS against a unknown OS.")]
     CheckAgainstUnknownOs,
 }
 
 pub type PathOsResult<T> = std::result::Result<T, PathOsError>;
 
-impl Display for PathOsError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            PathOsError::CheckAnyOs => f.write_str("Cannot check if 'Any' OS belongs to another OS group"),
-            PathOsError::CheckUnknownOs => f.write_str("Cannot check if 'Unknown' OS belongs to another OS group"),
-            PathOsError::CheckAgainstUnknownOs => f.write_str("Cannot check if OS against a unknown OS"),
-        }
-    }
-}
-
-impl std::error::Error for PathOsError {}
-
 /// Error type which describes which operating system is unknown
-#[derive(Debug)]
+#[derive(Error, Debug)]
+#[error("'{name}' is not a known operating system.")]
 pub struct ParsePathOsError {
     name: String,
 }
 
 pub type ParsePathOsResult = std::result::Result<PathOs, ParsePathOsError>;
-
-impl Display for ParsePathOsError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "'{}' is not a known operating system", self.name)
-    }
-}
 
 #[cfg(test)]
 mod tests {

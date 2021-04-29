@@ -1,56 +1,41 @@
-use std::fmt::{Display, Debug};
-use core::fmt;
+use std::fmt::Debug;
 use std::env::VarError;
 use std::io;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
+#[error(transparent)]
 pub struct Error {
+    #[from]
     repr: Repr,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 enum Repr {
-    Clap(clap::Error),
-    Var(VarError),
-    Io(io::Error),
-}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.repr {
-            Repr::Clap(err) => write!(f, "clap: {}", err),
-            Repr::Var(err) => Display::fmt(err, f),
-            Repr::Io(err) => Display::fmt(err, f),
-        }
-    }
-}
-
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        Some(match &self.repr {
-            Repr::Clap(err) => err,
-            Repr::Var(err) => err,
-            Repr::Io(err) => err,
-        })
-    }
+    #[error("clap: {0}")]
+    Clap(#[from] clap::Error),
+    #[error(transparent)]
+    Var(#[from] VarError),
+    #[error(transparent)]
+    Io(#[from] io::Error),
 }
 
 impl From<clap::Error> for Error {
-    fn from(err: clap::Error) -> Error {
-        Error{ repr: Repr::Clap(err) }
+    fn from(err: clap::Error) -> Self {
+        Repr::Clap(err).into()
     }
 }
 
 impl From<VarError> for Error {
-    fn from(err: VarError) -> Error {
-        Error { repr: Repr::Var(err) }
+    fn from(err: VarError) -> Self {
+        Repr::Var(err).into()
     }
 }
 
 impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {
-        Error { repr: Repr::Io(err) }
+    fn from(err: io::Error) -> Self {
+        Repr::Io(err).into()
     }
 }
