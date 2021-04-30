@@ -334,14 +334,14 @@ mod tests {
     #[test]
     fn test_serialize() {
         let input = TestType { flags: PathFlags::from_str("osx, admin").unwrap() };
-        let wanted = "flags = 'admin,osx'\n";
+        let wanted = "flags = 'admin,macos'\n";
         assert_eq!(&toml::to_string_pretty(&input).unwrap(), wanted);
     }
 
     #[test]
     fn test_deserialize() {
         let input: TestType = toml::from_str("flags = \"osx, admin\"\n").unwrap();
-        let wanted: PathFlags = "admin,osx".parse().unwrap();
+        let wanted: PathFlags = "admin,macos".parse().unwrap();
         assert_eq!(input.flags, wanted);
     }
 }
