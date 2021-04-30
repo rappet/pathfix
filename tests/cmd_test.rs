@@ -35,8 +35,7 @@ fn test_no_args() {
         .env("PATH", "/usr/bin:/usr/bin:/bin")
         .assert();
     assert
-        .failure()
-        .stdout("/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n");
+        .success();
 }
 
 #[test]

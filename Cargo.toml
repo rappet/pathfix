@@ -20,7 +20,7 @@ path = "src/bin/pathfix/main.rs"
 logging = ["env_logger"]
 
 [dependencies]
-clap = "2"
+clap = "3.0.0-beta.2"
 serde = { version = "1", features = ["derive"] }
 toml = "0.5.8"
 log = "0.4.14"

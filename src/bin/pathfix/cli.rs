@@ -1,58 +1,54 @@
-use clap::{ArgMatches, Arg, ArgGroup, App};
+use clap::Clap;
 
-pub struct CliConfig {
+#[derive(Clap)]
+#[clap(version = crate_version!(), author = crate_authors!(), after_help = include_str!("after_help.txt"))]
+pub struct Opts {
+    /// Deduplicates the path
+    #[clap(short, long)]
     pub dedup: bool,
-    pub mode: Mode,
+    /// Outputs line by line instead of the default colon seperated list
+    #[clap(short, long)]
+    pub lines: bool,
+    /// Includes path's from $PATH in environment
+    #[clap(short='e', long)]
     pub from_env: bool,
+    /// Searches included path's using inbuild configuration
+    #[clap(short, long)]
     pub included: bool,
+    /// Uses the specific configuration file
+    #[clap(short, long)]
     pub config: Option<String>,
+    /// Use recommended flags -dei. If -e, i or -c are not set, default is assumed.
+    ///
+    /// Use this flag to use the recommended settings for pathfix.
+    /// If no required source of paths is given, default is assumed.
+    /// Usually you don't need another configuration and adding
+    /// 'export PATH=$(/usr/bin/pathfix)' to your .bashrc/.zshrc/... file is enough.
+    #[clap(short='D', long)]
+    pub defaults: bool,
 }
 
-pub fn app() -> App<'static, 'static> {
-    // include Cargo.toml so a rebuild is triggered if metadata is changed
-    include_str!("../../../Cargo.toml");
+impl Opts {
+    pub fn dedup(&self) -> bool {
+        self.dedup || self.defaults()
+    }
 
-    clap::app_from_crate!()
-        .after_help(include_str!("after_help.txt"))
-        .args_from_usage(
-            "-d, --dedup 'Deduplicates the path'
-                    -l, --lines 'Outputs line by line instead of the default colon seperated list'
-                    -e, --from-env 'Includes path's from $PATH in environment'
-                    -i, --included 'Searches included path's using inbuild configuration'
-                    -c, --config [FILE] 'Uses the specific configuration file'
-            "
-        )
-        .arg(Arg::from_usage("-D, --defaults 'Use recommended flags -des. Either -D, -e or -i must be set'")
-            .long_help(
-"Use this flag to use the recommended settings for pathfix.
-Usually you don't need another configuration and adding
-'export PATH=$(/usr/bin/pathfix -D)' to your .bashrc/.zshrc/... file is enough. "))
-        .group(ArgGroup::with_name("source")
-            .args(&["from-env", "included", "defaults", "config"])
-            .required(true)
-            .multiple(true))
-}
+    pub fn from_env(&self) -> bool {
+        self.from_env || self.defaults()
+    }
 
-impl From<&ArgMatches<'_>> for CliConfig {
-    fn from(matches: &ArgMatches) -> Self {
-        let mode = if matches.is_present("lines") {
-            Mode::Lines
-        } else {
-            Mode::Colon
-        };
+    pub fn included(&self) -> bool {
+        self.included || self.defaults()
+    }
 
-        let recommended = matches.is_present("defaults");
-        CliConfig {
-            dedup: recommended || matches.is_present("dedup"),
-            mode,
-            from_env: recommended || matches.is_present("from-env"),
-            included: recommended || matches.is_present("included"),
-            config: matches.value_of("config").map(ToString::to_string)
-        }
+    pub fn defaults(&self) -> bool {
+        self.defaults || (!self.from_env && !self.included && self.config.is_none())
     }
 }
 
-pub enum Mode {
-    Colon,
-    Lines,
+pub fn opts() -> Opts {
+    // include Cargo.toml so a rebuild is triggered if metadata is changed
+    include_str!("../../../Cargo.toml");
+
+    Opts::parse()
 }

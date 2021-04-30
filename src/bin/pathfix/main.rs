@@ -11,34 +11,29 @@ extern crate env_logger;
 use log::Level::Debug;
 
 use std::{io, fs};
-use std::borrow::Borrow;
 use std::collections::HashSet;
 
 use pathfix::config::{Config, IncludeAdministrative, Paths, PathFlags};
 
 mod cli;
 
-use cli::{CliConfig, Mode};
-
 mod error;
 use error::Result;
 
 fn run() -> Result<()> {
-    let matches = cli::app()
-        .get_matches_safe()?;
-    let cli: CliConfig = matches.borrow().into();
+    let opts = cli::opts();
 
     let mut env_config = Config::new().with_env();
 
     // Use paths from environment if -e is set
-    if cli.from_env {
+    if opts.from_env() {
         env_config.paths = Paths::from_env()?;
         info!("Loaded contents of $PATH variable");
     }
 
     let mut config = env_config;
 
-    if cli.included {
+    if opts.included() {
         let load_config = |path: &str| {
             Config::from_file(path)
                 .map(Some)
@@ -67,7 +62,7 @@ fn run() -> Result<()> {
         }
 
         // Use included paths if -s is set
-        if cli.included && !config.base {
+        if opts.included() && !config.base {
             let included_config = Config::included();
 
             // Merge included config and config from path
@@ -76,7 +71,7 @@ fn run() -> Result<()> {
         }
     }
 
-    if let Some(config_file) = cli.config {
+    if let Some(config_file) = &opts.config {
         let load_config = Config::from_file(&config_file)?;
         config = load_config.merge(config);
         info!("Loaded specified config file {}", config_file);
@@ -100,7 +95,7 @@ fn run() -> Result<()> {
 
     let mut path = config.paths.resolve(path_flags, &config.env);
 
-    if cli.dedup {
+    if opts.dedup() {
         // removes duplicates while preserving order
         let (new_path, _set) = path.iter().fold(
             (Vec::new(), HashSet::new()),
@@ -125,15 +120,12 @@ fn run() -> Result<()> {
     debug!("Use admin paths: {:?}", config.include_administrative.clone().unwrap_or_default().check_current_user());
 
     // print output to stdout
-    match cli.mode {
-        Mode::Colon => {
-            println!("{}", path.join(":"));
+    if opts.lines {
+        for p in path {
+            println!("{}", p);
         }
-        Mode::Lines => {
-            for p in path {
-                println!("{}", p);
-            }
-        }
+    } else {
+        println!("{}", path.join(":"));
     }
 
     Ok(())
