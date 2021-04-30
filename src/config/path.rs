@@ -12,7 +12,7 @@ use std::io;
 
 use crate::config::{ConfigSource, PathFlags};
 
-/// I single entry in the to be generated _$PATH_ variable.
+/// Single entry in the to be generated _$PATH_ variable.
 ///
 /// This type includes the path, the flags that regulate if it should be added
 /// and the source of the Path (configuration file, environment, ...)
