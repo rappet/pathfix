@@ -5,6 +5,8 @@ $GOPATH/bin
 $GOROOT/bin
 ~/.local/bin
 ~/bin
+~/.sdkman/candidates/java/current/bin
+~/.deno/bin
 /snap                   |linux        # Flags can be added optionally
 /usr/local/sbin         |unix,admin
 /usr/local/bin          |unix
@@ -14,3 +16,10 @@ $GOROOT/bin
 /bin                    |unix
 /usr/local/games        |unix
 /usr/games              |unix
+/opt/homebrew/bin       |macos
+/opt/homebrew/sbin      |macos
+/opt/local/bin          |unix
+/opt/local/sbin         |unix
+/Library/TeX/texbin     |macos
+/usr/local/go/bin       |unix
+/Library/Apple/usr/bin  |macos
