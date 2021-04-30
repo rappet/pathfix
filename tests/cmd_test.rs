@@ -42,6 +42,7 @@ fn test_no_args() {
 fn test_config() {
     let mut cmd = Command::cargo_bin("pathfix").unwrap();
     let assert = cmd
+        .env("B_PATH", "./tests/b")
         .arg("--config=./tests/small.toml")
         .assert();
     assert

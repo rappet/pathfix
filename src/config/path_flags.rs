@@ -190,7 +190,7 @@ pub enum PathOs {
     Unix,
     Windows,
     Linux,
-    MacOS,
+    MacOs,
     Unknown,
 }
 
@@ -202,7 +202,7 @@ impl PathOs {
         } else if cfg!(windows) {
             PathOs::Windows
         } else if cfg!(target_os = "macos") {
-            PathOs::MacOS
+            PathOs::MacOs
         } else if cfg!(unix) {
             PathOs::Unix
         } else {
@@ -233,11 +233,11 @@ impl PathOs {
     ///
     /// assert_eq!(PathOs::Unix.is_unix().unwrap(), true);
     /// assert_eq!(PathOs::Windows.is_unix().unwrap(), false);
-    /// assert_eq!(PathOs::MacOS.is_unix().unwrap(), true);
+    /// assert_eq!(PathOs::MacOs.is_unix().unwrap(), true);
     /// ```
     pub fn is_unix(self) -> PathOsResult<bool> {
         match self {
-            PathOs::Unix | PathOs::Linux | PathOs::MacOS => Ok(true),
+            PathOs::Unix | PathOs::Linux | PathOs::MacOs => Ok(true),
             PathOs::Windows => Ok(false),
             PathOs::Any => Err(PathOsError::CheckAnyOs),
             PathOs::Unknown => Err(PathOsError::CheckUnknownOs),
@@ -258,7 +258,7 @@ impl fmt::Display for PathOs {
             PathOs::Unix => "unix",
             PathOs::Windows => "windows",
             PathOs::Linux => "linux",
-            PathOs::MacOS => "macos",
+            PathOs::MacOs => "macos",
             PathOs::Unknown => "unknown",
         })
     }
@@ -277,10 +277,10 @@ impl FromStr for PathOs {
                 PathOs::Windows
             }
             "linux" => PathOs::Linux,
-            "macos" | "osx" => PathOs::MacOS,
+            "macos" | "osx" => PathOs::MacOs,
             "mac" | "macosx" => {
                 warn!("You should refer to MacOSX with 'osx' in your configuration, not with '{}'", s);
-                PathOs::MacOS
+                PathOs::MacOs
             }
             _ => return Err(ParsePathOsError { name: s.to_string() } )
         })

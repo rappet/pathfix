@@ -4,7 +4,7 @@ include_administrative = { always = {} }
 
 [paths]
 "./tests/a" = ""
-"./tests/b/c" = ""
+"$B_PATH/c" = ""
 "./tests/d" = ""
 
 [env]

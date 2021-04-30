@@ -49,8 +49,8 @@ impl Path {
             .map(|folder| {
                 if folder == "~" {
                     env.get("HOME").map(String::to_string)
-                } else if folder.starts_with('$') {
-                    env.get(&folder[1..]).map(String::to_string)
+                } else if let Some(env_name) = folder.strip_prefix('$') {
+                    env.get(env_name).map(String::to_string)
                 } else {
                     Some(folder.to_string())
                 }
